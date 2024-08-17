@@ -40,8 +40,7 @@ async function run() {
     const allProductsCollection = client.db('productsFinderPro').collection('allProducts')
 
     app.get('/allProducts', async (req, res) => {
-      const { page = 1, limit = 10, search = '', category, sort } = req.query;
-      console.log(category);
+      const { search = '', category, page, size, sort } = req.query;
       let query = {};
       if (search) {
         query.productName = { $regex: search, $options: 'i' };
@@ -57,8 +56,18 @@ async function run() {
       } else if (sort === 'dateDesc') {
         sortOrder.creationDate = -1;
       }
-      const result = await allProductsCollection.find(query).sort(sortOrder).limit(parseInt(limit)).skip((page - 1) * parseInt(limit)).toArray()
+      const options = {
+        skip: parseInt(page) * parseInt(size),
+        limit: parseInt(size),
+        sort: sortOrder
+      };
+      console.log(options);
+      const result = await allProductsCollection.find(query, options).toArray()
       res.send(result)
+    })
+    app.get('/productsCount', async (req, res) => {
+      const count = await allProductsCollection.estimatedDocumentCount()
+      res.send({ count })
     })
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
   } finally {
