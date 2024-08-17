@@ -41,10 +41,13 @@ async function run() {
 
     app.get('/allProducts', async (req, res) => {
       const { page = 1, limit = 10, search = '', category, sort } = req.query;
-      console.log(search);
+      console.log(category);
       let query = {};
       if (search) {
         query.productName = { $regex: search, $options: 'i' };
+      }
+      if (category) {
+        query.category = category;
       }
       let sortOrder = {};
       if (sort === 'priceAsc') {
@@ -54,8 +57,7 @@ async function run() {
       } else if (sort === 'dateDesc') {
         sortOrder.creationDate = -1;
       }
-      const result = await allProductsCollection.find(query).sort(sortOrder).limit(parseInt(limit))
-      .skip((page - 1) * parseInt(limit)).toArray()
+      const result = await allProductsCollection.find(query).sort(sortOrder).limit(parseInt(limit)).skip((page - 1) * parseInt(limit)).toArray()
       res.send(result)
     })
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
